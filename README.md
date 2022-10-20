@@ -27,7 +27,7 @@ a city where you want to have an interview. For example, 94 represents Toronto
 - That's it! 
 
 ### Multi Cities
-If you want to check multi cities and get the earliest date possible, you need to add their facility ids to `config.ini`
+If you want to check multi cities and get the earliest date possible (no matters what city), you need to add their facility ids to `config.ini`
 (`FACILITY_ID_LIST`) and run `python multi_cities_visa.py` instead of `visa.py` 
 
 ## Acknowledgement
