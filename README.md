@@ -15,11 +15,14 @@ English Version
 ## Initial Setup
 - Create a `config.ini` file with all the details required
 - Install the required python packages: `pip3 install -r requirements.txt`
-- Default setup `visa.py`: It checks Toronto, you can change `FACILITY_ID` to the city you want 
-- (you can find the facility id on the website HTML elements)
+- `FACILITY_ID` is the id on the usvisa-info website assigned to
+a city where you want to have an interview. For example, 94 represents Toronto 
+(you can find the facility id on the website HTML elements)
+- Default setup `visa.py`: It checks Toronto, you can change `FACILITY_ID` to the city you want
 - Default setup `multi_cities_visa.py`: checks _Toronto, Montreal_ and _Vancouver_
 
 ## Executing the script
+### Targeting one city 
 - Simply run `python visa.py`
 - That's it! 
 
