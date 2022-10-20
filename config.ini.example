@@ -3,11 +3,16 @@
 USERNAME = example@example.com
 PASSWORD = xxxxxxxxxx
 SCHEDULE_ID = 99999999
+
+;The date you want to schedule a new date before
 MY_SCHEDULE_DATE = 2024-01-01
-; Spanish - Colombia
-COUNTRY_CODE = es-co
-; Bogotá
-FACILITY_ID = 25
+; English
+COUNTRY_CODE = en-ca
+; Toronto
+FACILITY_ID = 94
+; if you need to check multi cities like Vancouver, Toronto, Montreal
+FACILITY_ID_LIST = [92, 94, 95]
+
 
 [CHROMEDRIVER]
 ; Details for the script to control Chrome

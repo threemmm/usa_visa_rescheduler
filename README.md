@@ -1,5 +1,9 @@
 # visa_rescheduler
-US VISA (ais.usvisa-info.com) appointment re-scheduler - Colombian adaptation
+US VISA (ais.usvisa-info.com) appointment re-scheduler - USA visa appointment in Canada - python
+
+
+English Version
+
 
 ## Prerequisites
 - Having a US VISA appointment scheduled already

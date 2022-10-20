@@ -18,7 +18,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-
 config = configparser.ConfigParser()
 config.read('config.ini')
 
@@ -26,7 +25,7 @@ USERNAME = config['USVISA']['USERNAME']
 PASSWORD = config['USVISA']['PASSWORD']
 SCHEDULE_ID = config['USVISA']['SCHEDULE_ID']
 MY_SCHEDULE_DATE = config['USVISA']['MY_SCHEDULE_DATE']
-COUNTRY_CODE = config['USVISA']['COUNTRY_CODE'] 
+COUNTRY_CODE = config['USVISA']['COUNTRY_CODE']
 FACILITY_ID = config['USVISA']['FACILITY_ID']
 
 SENDGRID_API_KEY = config['SENDGRID']['SENDGRID_API_KEY']
@@ -36,16 +35,20 @@ PUSH_USER = config['PUSHOVER']['PUSH_USER']
 LOCAL_USE = config['CHROMEDRIVER'].getboolean('LOCAL_USE')
 HUB_ADDRESS = config['CHROMEDRIVER']['HUB_ADDRESS']
 
-REGEX_CONTINUE = "//a[contains(text(),'Continuar')]"
+REGEX_CONTINUE = "//a[contains(text(),'Continue')]"
 
 
 # def MY_CONDITION(month, day): return int(month) == 11 and int(day) >= 5
-def MY_CONDITION(month, day): return True # No custom condition wanted for the new scheduled date
+def MY_CONDITION(month, day): return True  # No custom condition wanted for the new scheduled date
 
-STEP_TIME = 0.5  # time between steps (interactions with forms): 0.5 seconds
-RETRY_TIME = 60*10  # wait time between retries/checks for available dates: 10 minutes
-EXCEPTION_TIME = 60*30  # wait time when an exception occurs: 30 minutes
-COOLDOWN_TIME = 60*60  # wait time when temporary banned (empty list): 60 minutes
+
+STEP_TIME = round(random.uniform(0.41, 0.5), 10)
+    # 0.5  # time between steps (interactions with forms): 0.5 seconds
+RETRY_TIME = random.randint(7, 23) * random.randint(1, 4)  # 60*random.randint(1, 3)  # wait time between retries/checks for available dates: 10 minutes
+RETRY_TIME_EXTRA = random.randint(30, 60) * random.randint(5, 7)  # 60*random.randint(1, 3)  # wait time between retries/checks for available dates: 10 minutes
+
+EXCEPTION_TIME = 60 * random.randint(33, 44)  # wait time when an exception occurs: 30 minutes
+COOLDOWN_TIME = 60 * random.randint(56, 70)  # wait time when temporary banned (empty list): 60 minutes
 
 DATE_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/days/{FACILITY_ID}.json?appointments[expedite]=false"
 TIME_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/times/{FACILITY_ID}.json?date=%s&appointments[expedite]=false"
@@ -126,7 +129,7 @@ def do_login_action():
 
     print("\tclick privacy")
     box = driver.find_element(By.CLASS_NAME, 'icheckbox')
-    box .click()
+    box.click()
     time.sleep(random.randint(1, 3))
 
     print("\tcommit")
@@ -170,8 +173,11 @@ def reschedule(date):
     data = {
         "utf8": driver.find_element(by=By.NAME, value='utf8').get_attribute('value'),
         "authenticity_token": driver.find_element(by=By.NAME, value='authenticity_token').get_attribute('value'),
-        "confirmed_limit_message": driver.find_element(by=By.NAME, value='confirmed_limit_message').get_attribute('value'),
-        "use_consulate_appointment_capacity": driver.find_element(by=By.NAME, value='use_consulate_appointment_capacity').get_attribute('value'),
+        "confirmed_limit_message": driver.find_element(by=By.NAME, value='confirmed_limit_message').get_attribute(
+            'value'),
+        "use_consulate_appointment_capacity": driver.find_element(by=By.NAME,
+                                                                  value='use_consulate_appointment_capacity').get_attribute(
+            'value'),
         "appointments[consulate_appointment][facility_id]": FACILITY_ID,
         "appointments[consulate_appointment][date]": date,
         "appointments[consulate_appointment][time]": time,
@@ -184,7 +190,7 @@ def reschedule(date):
     }
 
     r = requests.post(APPOINTMENT_URL, headers=headers, data=data)
-    if(r.text.find('Successfully Scheduled') != -1):
+    if (r.text.find('Successfully Scheduled') != -1):
         msg = f"Rescheduled Successfully! {date} {time}"
         send_notification(msg)
         EXIT = True
@@ -195,7 +201,7 @@ def reschedule(date):
 
 def is_logged_in():
     content = driver.page_source
-    if(content.find("error") != -1):
+    if (content.find("error") != -1):
         return False
     return True
 
@@ -225,7 +231,7 @@ def get_available_date(dates):
         date = d.get('date')
         if is_earlier(date) and date != last_seen:
             _, month, day = date.split('-')
-            if(MY_CONDITION(month, day)):
+            if (MY_CONDITION(month, day)):
                 last_seen = date
                 return date
 
@@ -240,7 +246,10 @@ def push_notification(dates):
 if __name__ == "__main__":
     login()
     retry_count = 0
+    while_counting = 0
+    list_empty_count = 0
     while 1:
+        print(while_counting)
         if retry_count > 6:
             break
         try:
@@ -262,21 +271,42 @@ if __name__ == "__main__":
                 reschedule(date)
                 push_notification(dates)
 
-            if(EXIT):
+            if (EXIT):
                 print("------------------exit")
                 break
 
             if not dates:
-              msg = "List is empty"
-              send_notification(msg)
-              #EXIT = True
-              time.sleep(COOLDOWN_TIME)
+                list_empty_count+=1
+                msg = f"List is empty. Status: RetryCount={retry_count}, WhileCount={while_counting}. BoOS BOoS"
+                print(msg)
+                # send_notification(msg)
+                # EXIT = True
+                if (list_empty_count % 10 == 0):
+
+                    print(f"RetryCount={retry_count}, list empty count ={list_empty_count}.")
+                    # send_notification(msg)
+                    time.sleep(COOLDOWN_TIME)
+                if (while_counting % 27 == 0):
+                    msg = f"RetryCount={retry_count}, WhileCount={while_counting}. Dates: {dates}"
+                    print(f"RetryCount={retry_count}, WhileCount={while_counting}.")
+                    send_notification(msg)
+                    time.sleep(RETRY_TIME_EXTRA)
+                time.sleep(RETRY_TIME)
+
             else:
-              time.sleep(RETRY_TIME)
+                list_empty_count = 0
+                if (while_counting % 27 == 0):
+                    msg = f"RetryCount={retry_count}, WhileCount={while_counting}. Dates: {dates}"
+                    print(f"RetryCount={retry_count}, WhileCount={while_counting}.")
+                    send_notification(msg)
+                    time.sleep(RETRY_TIME_EXTRA)
+                time.sleep(RETRY_TIME)
 
         except:
             retry_count += 1
             time.sleep(EXCEPTION_TIME)
+        finally:
+            while_counting += 1
 
-    if(not EXIT):
+    if (not EXIT):
         send_notification("HELP! Crashed.")
